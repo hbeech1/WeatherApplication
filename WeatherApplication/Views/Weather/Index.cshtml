@@ -1,0 +1,119 @@
+﻿
+@{
+    ViewBag.Title = "index";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+<style type="text/css">
+
+    .error-text {
+        display: none;
+    }
+    .cold {
+        color: #00ffff
+    }
+    .mild {
+        color: #00ff21
+    }
+    .warm {
+        color: #ffd800
+    }
+    .hot {
+        color: #ff0000
+    }
+</style>
+<h2>@ViewBag.Message</h2>
+<div class="row">
+    <div class="col bg-dark text-light text-center">
+        <h4>Weather Information</h4>
+    </div>
+</div>
+<div class="row">
+    <div class="col">
+        <div class="error-text alert-danger"></div>
+    </div>
+</div>
+<div class="row">
+    <div class="col">
+        @Html.DropDownList("user-list", ViewBag.Users as IEnumerable<SelectListItem>)
+    </div>
+</div>
+<div class="row">
+    <div class="col">
+        <div class="row">
+            <div class="col">
+                <h4>Weather data for selected user</h4>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col weather-data">
+                <span class="city-name"></span>
+                <br /> 
+                <b>High: </b><div class="value"><span class="city-high"></span><span class="unit">&deg;F</span></div>
+                <br />
+                <b>Low: </b><div class="value"><span class="city-low"></span><span class="unit">&deg;F</span></div>
+                <br />
+                <b>Current: </b><div class="value"><span class="city-current"></span><span class="unit">&deg;F</span></div>
+                
+            </div>
+        </div>
+    </div>
+</div>
+
+@section scripts{
+    <script type="text/javascript">
+        function getTemperatureColor(temp) {
+            var returnValue= "";
+            if (temp <= 32) {
+                returnValue = "cold";
+            }
+            else if (temp <= 54) {
+                returnValue = "mild";
+            }
+            else if (temp <= 77) {
+                returnValue = "warm";
+            }
+            else {
+                returnValue = "hot";
+            }
+                return returnValue;
+        }
+        function loadWeatherData(id) {
+            $.post({
+                url: "@(Url.RouteUrl("Default", new { controller = "Weather", action = "FindByCityID" }))",
+                context: document.body,
+                data: { cityId: id },
+                success: function (result) {
+                    if (result) {
+                        console.log(result);
+                        $(".city-name").text(result.name);
+                        $(".city-high").text(result.main.temp_max.toFixed(0));
+                        $(".city-high").removeClass("cold").removeClass("hot").removeClass("mild").removeClass("warm");
+                        $(".city-high").addClass(getTemperatureColor(result.main.temp_max.toFixed(0)));
+                        $(".city-low").text(result.main.temp_min.toFixed(0));
+                        $(".city-low").removeClass("cold").removeClass("hot").removeClass("mild").removeClass("warm");
+                        $(".city-low").addClass(getTemperatureColor(result.main.temp_min.toFixed(0)));
+                        $(".city-current").text(result.main.temp.toFixed(0));
+                        $(".city-current").removeClass("cold").removeClass("hot").removeClass("mild").removeClass("warm");
+                        $(".city-current").addClass(getTemperatureColor(result.main.temp.toFixed(0)));
+                    }
+                },
+                error: function (err) {
+                    $(".error-text").text("An error occurred while attempting to load city information for city ID: " + id);
+                    $(".error-text").fadeIn(500);
+                    setTimeout(function () {
+                        $(".error-text").fadeOut(500);
+                    }, 20000);
+                }
+            });
+        }
+
+        $(function () {
+            $(document).on("change", "#user-list", function (e) {
+                console.log("here");
+                var selectedCity = $(this).val();
+                console.log(selectedCity);
+                loadWeatherData(selectedCity);
+            });
+        });
+    </script>
+    }

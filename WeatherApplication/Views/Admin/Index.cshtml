@@ -1,0 +1,124 @@
+﻿
+@{
+    ViewBag.Title = "Index";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<h2>@ViewBag.Message</h2>
+<div class="row">
+    <div class="col bg-dark text-light text-center">
+        <h4>Manage users</h4>
+    </div>
+</div>
+<div class="row">
+    <div class="col">
+        <div class="user-table">
+            <div class="row">
+                <div class="col-2">
+                    First Name
+                </div>
+                <div class="col-2">
+                    Last Name
+                </div>
+                <div class="col-2">City ID</div>
+            </div>
+            @foreach (var item in ViewBag.Users) {
+                <div class="row">
+                    <div class="col-2">
+                        @item.FirstName
+                    </div>
+                    <div class="col-2">
+                        @item.LastName
+                    </div>
+                    <div class="col-2">
+                        @item.CityID
+                    </div>
+                </div>
+            }
+        </div>
+        <button type="button" class="btn btn-primary" data-toggle="modal" data-target=".new-user-modal">Add User</button>
+    </div>
+</div>
+<div class="new-user-modal modal modal-wide fade" tabindex="-1" role="dialog">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Add User</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="container">
+                    <form method="post" action="@(Url.RouteUrl("Default", new { controller = "Admin", action = "AddUser" }))">
+                        <div class="row">
+                            <div class="col">
+                                <div class="form-group">
+                                    @(Html.Label("First Name", new { @class = "form-label" }))
+                                    @(Html.TextBox("FirstName", string.Empty, new { @class = "form-control" }))
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col">
+                                <div class="form-group">
+                                    @(Html.Label("Last Name", new { @class = "form-label" }))
+                                    @(Html.TextBox("LastName", string.Empty, new { @class = "form-control" }))
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col">
+                                <div class="form-group">
+                                    @(Html.Label("City Name", new { @class = "form-label" }))
+                                    @(Html.TextBox("CityName", string.Empty, new { @class = "form-control" }))
+                                    <button name="findCityButton" id="findCityButton" class="btn btn-secondary">Lookup</button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col">
+                                <div class="form-group">
+                                    @(Html.Label("City ID", new { @class = "form-label" }))
+                                    @(Html.TextBox("CityID", string.Empty, new { @class = "form-control" }))
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col text-left">
+                                <input type="submit" value="Add" name="submit" />
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary" data-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+@section scripts {
+<script type="text/javascript">
+    $(function () {
+        $(document).on("click", "#findCityButton", function (e) {
+            console.log($("#CityName").val());
+            $.get({
+                url: "@(Url.RouteUrl("Default", new { controller = "Weather", action = "FindByName" }))?cityName=" + $("#CityName").val(),
+                context: document.body,
+                success: function (result) {
+                    console.log(result);
+                    if (result) {
+                        $("#CityID").val(result.id);
+                    }
+                },
+                error: function (error) {
+                    console.log(error);
+                }
+            });
+            e.preventDefault();
+            return false;
+        });
+    });
+</script>
+}
